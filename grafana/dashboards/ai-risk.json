@@ -1,0 +1,85 @@
+{
+  "uid": "tw-ai-risk",
+  "title": "TokenWarden · AI Risk",
+  "tags": ["tokenwarden", "security", "ai", "owasp"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5m",
+  "time": { "from": "now-90d", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "AI risk score (latest scan, 100 = clean)",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 6 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "none", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "orange", "value": 50 }, { "color": "green", "value": 80 } ] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^score$/", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value" },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT score FROM latest_scan" } ]
+    },
+    {
+      "id": 2, "type": "stat", "title": "Findings by severity",
+      "gridPos": { "x": 6, "y": 0, "w": 10, "h": 6 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "none", "color": { "mode": "fixed", "fixedColor": "text" } }, "overrides": [
+        { "matcher": { "id": "byName", "options": "Critical" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "dark-red" } } ] },
+        { "matcher": { "id": "byName", "options": "High" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } } ] },
+        { "matcher": { "id": "byName", "options": "Medium" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } } ] },
+        { "matcher": { "id": "byName", "options": "Low" }, "properties": [ { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } } ] }
+      ] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value_and_name", "orientation": "vertical" },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT count(*) FILTER (WHERE severity='critical') AS \"Critical\", count(*) FILTER (WHERE severity='high') AS \"High\", count(*) FILTER (WHERE severity='medium') AS \"Medium\", count(*) FILTER (WHERE severity='low') AS \"Low\" FROM ai_findings WHERE scan_id = (SELECT id FROM latest_scan)" } ]
+    },
+    {
+      "id": 3, "type": "stat", "title": "AI inventory (latest scan)",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 6 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "none", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "value", "graphMode": "none", "textMode": "value_and_name" },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT count(DISTINCT location) FILTER (WHERE kind='ai-app') AS \"AI apps\", count(*) FILTER (WHERE kind='mcp-server') AS \"MCP servers\", count(*) FILTER (WHERE kind='api-key') AS \"Exposed keys\" FROM ai_assets WHERE scan_id = (SELECT id FROM latest_scan)" } ]
+    },
+    {
+      "id": 4, "type": "barchart", "title": "Findings by OWASP Top 10 for LLM Apps",
+      "gridPos": { "x": 0, "y": 6, "w": 10, "h": 9 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "none", "color": { "mode": "fixed", "fixedColor": "orange" } }, "overrides": [] },
+      "options": { "orientation": "horizontal", "showValue": "always", "legend": { "showLegend": false }, "xTickLabelRotation": 0 },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT owasp || ' ' || owasp_name AS category, count(*) AS findings FROM ai_findings WHERE scan_id = (SELECT id FROM latest_scan) GROUP BY 1 ORDER BY 2 DESC" } ]
+    },
+    {
+      "id": 5, "type": "table", "title": "Findings (latest scan): fix from the top",
+      "gridPos": { "x": 10, "y": 6, "w": 14, "h": 9 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "custom": { "cellOptions": { "type": "auto" } } }, "overrides": [
+        { "matcher": { "id": "byName", "options": "severity" }, "properties": [ { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+          { "id": "mappings", "value": [ { "type": "value", "options": { "critical": { "color": "dark-red", "index": 0 }, "high": { "color": "red", "index": 1 }, "medium": { "color": "orange", "index": 2 }, "low": { "color": "yellow", "index": 3 } } } ] },
+          { "id": "custom.width", "value": 90 } ] },
+        { "matcher": { "id": "byName", "options": "owasp" }, "properties": [ { "id": "custom.width", "value": 70 } ] }
+      ] },
+      "options": { "showHeader": true, "cellHeight": "sm" },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT severity, owasp, title, file || CASE WHEN line > 0 THEN ':' || line ELSE '' END AS location, detail AS how_to_fix FROM ai_findings WHERE scan_id = (SELECT id FROM latest_scan) ORDER BY array_position(ARRAY['critical','high','medium','low'], severity), owasp" } ]
+    },
+    {
+      "id": 6, "type": "table", "title": "AI inventory: apps, MCP servers and exposed keys",
+      "gridPos": { "x": 0, "y": 15, "w": 12, "h": 8 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": { "showHeader": true, "cellHeight": "sm" },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT kind, name, location FROM ai_assets WHERE scan_id = (SELECT id FROM latest_scan) ORDER BY kind, name" } ]
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "Risk score over time",
+      "gridPos": { "x": 12, "y": 15, "w": 12, "h": 8 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "none", "min": 0, "max": 100, "custom": { "drawStyle": "line", "pointSize": 8, "showPoints": "always", "lineWidth": 2 } }, "overrides": [] },
+      "options": { "legend": { "showLegend": false }, "tooltip": { "mode": "single" } },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "time_series",
+        "rawSql": "SELECT ts AS time, score AS \"risk score\" FROM ai_scans WHERE $__timeFilter(ts) ORDER BY ts" } ]
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "uid": "tw-ai-spend",
+  "title": "TokenWarden · AI Spend",
+  "tags": ["tokenwarden", "finops", "ai"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5m",
+  "time": { "from": "now-30d", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "AI spend this month (USD)",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 5 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD", "decimals": 2, "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "value", "graphMode": "none", "textMode": "value" },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT sum(spent_usd) AS \"Spend MTD\" FROM team_budget_mtd" } ]
+    },
+    {
+      "id": 2, "type": "stat", "title": "Teams over 80% of budget",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 5 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "none", "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 2 } ] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "background", "graphMode": "none", "textMode": "value" },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT count(*) AS \"Teams\" FROM team_budget_mtd WHERE burn_pct >= 80" } ]
+    },
+    {
+      "id": 3, "type": "bargauge", "title": "Budget burn this month (%)",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 10 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 120, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 80 }, { "color": "red", "value": 100 } ] } }, "overrides": [] },
+      "options": { "orientation": "horizontal", "displayMode": "gradient", "showUnfilled": true, "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": true } },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT team, burn_pct FROM team_budget_mtd ORDER BY burn_pct DESC" } ]
+    },
+    {
+      "id": 4, "type": "stat", "title": "Tokens this month",
+      "gridPos": { "x": 0, "y": 5, "w": 12, "h": 5 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 1 }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "none", "graphMode": "none", "textMode": "value_and_name" },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT sum(input_tokens) AS \"Input tokens\", sum(output_tokens) AS \"Output tokens\", sum(requests) AS \"Requests\" FROM ai_usage WHERE ts >= date_trunc('month', now())" } ]
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "Daily AI spend by team (USD)",
+      "gridPos": { "x": 0, "y": 10, "w": 24, "h": 9 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD", "custom": { "drawStyle": "bars", "stacking": { "mode": "normal", "group": "A" }, "fillOpacity": 80, "lineWidth": 1 } }, "overrides": [] },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["sum"] }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "time_series",
+        "rawSql": "SELECT date_trunc('day', ts) AS time, team AS metric, sum(cost_usd) AS value FROM ai_usage WHERE $__timeFilter(ts) GROUP BY 1, 2 ORDER BY 1" } ]
+    },
+    {
+      "id": 6, "type": "piechart", "title": "Spend by model (selected range)",
+      "gridPos": { "x": 0, "y": 19, "w": 8, "h": 9 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" }, "overrides": [] },
+      "options": { "pieType": "donut", "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] }, "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": true } },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT model, sum(cost_usd) AS spend FROM ai_usage WHERE $__timeFilter(ts) GROUP BY model ORDER BY spend DESC" } ]
+    },
+    {
+      "id": 7, "type": "table", "title": "Waste finder: premium models on high-volume, low-output work",
+      "description": "Teams sending many requests to the most expensive model. These are often simple jobs (classification, routing) that a small model could do far cheaper.",
+      "gridPos": { "x": 8, "y": 19, "w": 16, "h": 9 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [
+        { "matcher": { "id": "byName", "options": "spend_usd" }, "properties": [ { "id": "unit", "value": "currencyUSD" } ] },
+        { "matcher": { "id": "byName", "options": "saving_if_haiku_usd" }, "properties": [ { "id": "unit", "value": "currencyUSD" }, { "id": "custom.cellOptions", "value": { "type": "color-background" } }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } } ] }
+      ] },
+      "options": { "showHeader": true, "sortBy": [ { "displayName": "saving_if_haiku_usd", "desc": true } ] },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT u.team, u.model, sum(u.requests) AS requests, round(sum(u.output_tokens)::numeric / nullif(sum(u.requests),0)) AS avg_output_tokens, round(sum(u.cost_usd), 2) AS spend_usd, round(sum(u.cost_usd) - sum(u.input_tokens/1e6*h.input_per_mtok + u.output_tokens/1e6*h.output_per_mtok), 2) AS saving_if_haiku_usd FROM ai_usage u JOIN model_prices h ON h.model = 'claude-haiku' WHERE $__timeFilter(u.ts) AND u.model LIKE 'claude-opus%' GROUP BY u.team, u.model ORDER BY saving_if_haiku_usd DESC" } ]
+    },
+    {
+      "id": 8, "type": "table", "title": "Spend by API key (selected range)",
+      "gridPos": { "x": 0, "y": 28, "w": 24, "h": 8 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" },
+      "fieldConfig": { "defaults": {}, "overrides": [ { "matcher": { "id": "byName", "options": "spend_usd" }, "properties": [ { "id": "unit", "value": "currencyUSD" } ] } ] },
+      "options": { "showHeader": true },
+      "targets": [ { "refId": "A", "datasource": { "type": "grafana-postgresql-datasource", "uid": "tw-postgres" }, "editorMode": "code", "rawQuery": true, "format": "table",
+        "rawSql": "SELECT api_key_alias, team, source, string_agg(DISTINCT model, ', ') AS models, sum(requests) AS requests, round(sum(cost_usd), 2) AS spend_usd FROM ai_usage WHERE $__timeFilter(ts) GROUP BY api_key_alias, team, source ORDER BY spend_usd DESC" } ]
+    }
+  ]
+}

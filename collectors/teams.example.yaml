@@ -1,0 +1,23 @@
+# Map each provider's workspace / project / resource group to a team.
+# Copy to teams.yaml and fill in the client's real IDs.
+
+unmapped_team: Unassigned        # anything not listed below lands here, so nothing goes missing
+
+budgets:                          # monthly USD budget per team (used for new teams only)
+  Unassigned: 100
+
+anthropic:                        # Claude Console workspace IDs (null/default workspace = "default")
+  workspaces:
+    wrkspc_mock_datasci: Data Science
+    wrkspc_mock_support: Customer Support
+    default: Platform
+
+openai:                           # OpenAI project IDs
+  projects:
+    proj_mock_marketing: Marketing
+    proj_mock_support: Customer Support
+
+azure:                            # Azure OpenAI: cost by resource group
+  service_names: ["Cognitive Services"]
+  resource_groups:
+    rg-platform-ai: Platform

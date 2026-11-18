@@ -1,0 +1,17 @@
+{
+  "properties": {
+    "nextLink": null,
+    "columns": [
+      {"name": "Cost", "type": "Number"},
+      {"name": "UsageDate", "type": "Number"},
+      {"name": "ResourceGroupName", "type": "String"},
+      {"name": "Meter", "type": "String"},
+      {"name": "Currency", "type": "String"}
+    ],
+    "rows": [
+      [41.37, {i1}, "rg-platform-ai", "gpt-4o-0806-Inp-glbl 1M Tokens", "USD"],
+      [18.02, {i1}, "rg-platform-ai", "gpt-4o-0806-Outp-glbl 1M Tokens", "USD"],
+      [7.50, {i2}, "rg-sandbox", "gpt-4o-mini-0718-Inp-glbl 1M Tokens", "USD"]
+    ]
+  }
+}

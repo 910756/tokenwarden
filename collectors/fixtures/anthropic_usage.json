@@ -1,0 +1,20 @@
+{
+  "data": [
+    {"starting_at": "{d1}T00:00:00Z", "ending_at": "{d0}T00:00:00Z", "results": [
+      {"workspace_id": "wrkspc_mock_datasci", "model": "claude-opus-5-5", "uncached_input_tokens": 1800000, "cache_read_input_tokens": 400000,
+       "cache_creation": {"ephemeral_5m_input_tokens": 50000, "ephemeral_1h_input_tokens": 0}, "output_tokens": 410000},
+      {"workspace_id": "wrkspc_mock_support", "model": "claude-opus-5-5", "uncached_input_tokens": 2600000, "cache_read_input_tokens": 0,
+       "cache_creation": {"ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 0}, "output_tokens": 90000},
+      {"workspace_id": null, "model": "claude-haiku-5-5", "uncached_input_tokens": 3100000, "cache_read_input_tokens": 900000,
+       "cache_creation": {"ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 0}, "output_tokens": 600000}
+    ]},
+    {"starting_at": "{d2}T00:00:00Z", "ending_at": "{d1}T00:00:00Z", "results": [
+      {"workspace_id": "wrkspc_mock_datasci", "model": "claude-sonnet-5-5", "uncached_input_tokens": 4200000, "cache_read_input_tokens": 1000000,
+       "cache_creation": {"ephemeral_5m_input_tokens": 100000, "ephemeral_1h_input_tokens": 0}, "output_tokens": 950000},
+      {"workspace_id": "wrkspc_mock_unknown", "model": "claude-sonnet-5-5", "uncached_input_tokens": 300000, "cache_read_input_tokens": 0,
+       "cache_creation": {"ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 0}, "output_tokens": 70000}
+    ]}
+  ],
+  "has_more": false,
+  "next_page": null
+}

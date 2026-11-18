@@ -1,0 +1,89 @@
+# Budget alerts: fire per team when month-to-date AI spend passes 80% / 100% of budget.
+# Sends to ALERT_WEBHOOK_URL (defaults to the local demo sink; set a Slack/Teams/any webhook in .env).
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: tokenwarden-webhook
+    receivers:
+      - uid: tw-webhook
+        type: webhook
+        settings:
+          url: $ALERT_WEBHOOK_URL
+          httpMethod: POST
+
+policies:
+  - orgId: 1
+    receiver: tokenwarden-webhook
+    group_by: ["alertname", "team"]
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 12h
+
+groups:
+  - orgId: 1
+    name: ai-budgets
+    folder: TokenWarden
+    interval: 5m
+    rules:
+      - uid: tw-budget-80
+        title: AI budget over 80%
+        condition: C
+        for: 0m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "Team {{ $labels.team }} has used {{ $values.A }}% of its monthly AI budget."
+          description: "Check the TokenWarden dashboard and the Waste finder before the budget runs out."
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: tw-postgres
+            model:
+              refId: A
+              editorMode: code
+              rawQuery: true
+              format: table
+              rawSql: "SELECT team, burn_pct::float AS burn_pct FROM team_budget_mtd"
+          - refId: C
+            relativeTimeRange: { from: 0, to: 0 }
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [80] }
+
+      - uid: tw-budget-100
+        title: AI budget exceeded
+        condition: C
+        for: 0m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: "Team {{ $labels.team }} is OVER its monthly AI budget ({{ $values.A }}%)."
+          description: "Consider enforcing the hard budget on the TokenWarden gateway (Phase 2)."
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: tw-postgres
+            model:
+              refId: A
+              editorMode: code
+              rawQuery: true
+              format: table
+              rawSql: "SELECT team, burn_pct::float AS burn_pct FROM team_budget_mtd"
+          - refId: C
+            relativeTimeRange: { from: 0, to: 0 }
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [100] }

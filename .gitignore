@@ -1,0 +1,26 @@
+# Secrets and local config
+.env
+.env.*
+!.env.example
+collectors/teams.yaml
+
+# Private business docs (not for the public repo)
+docs/upwork-offer.md
+docs/linkedin-post.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Output
+*.log
+*.pdf
+out/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

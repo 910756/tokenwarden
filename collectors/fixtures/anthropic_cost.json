@@ -1,0 +1,19 @@
+{
+  "data": [
+    {"starting_at": "{d1}T00:00:00Z", "ending_at": "{d0}T00:00:00Z", "results": [
+      {"workspace_id": "wrkspc_mock_datasci", "description": "Claude Opus 5.5 Usage - Input Tokens", "model": "claude-opus-5-5", "cost_type": "tokens", "currency": "USD", "amount": "3412.50"},
+      {"workspace_id": "wrkspc_mock_datasci", "description": "Claude Opus 5.5 Usage - Output Tokens", "model": "claude-opus-5-5", "cost_type": "tokens", "currency": "USD", "amount": "3075.00"},
+      {"workspace_id": "wrkspc_mock_support", "description": "Claude Opus 5.5 Usage - Input Tokens", "model": "claude-opus-5-5", "cost_type": "tokens", "currency": "USD", "amount": "3900.00"},
+      {"workspace_id": "wrkspc_mock_support", "description": "Claude Opus 5.5 Usage - Output Tokens", "model": "claude-opus-5-5", "cost_type": "tokens", "currency": "USD", "amount": "675.00"},
+      {"workspace_id": null, "description": "Claude Haiku 5.5 Usage - Input Tokens", "model": "claude-haiku-5-5", "cost_type": "tokens", "currency": "USD", "amount": "320.00"},
+      {"workspace_id": "wrkspc_mock_datasci", "description": "Web Search Usage", "model": null, "cost_type": "web_search", "currency": "USD", "amount": "150.00"}
+    ]},
+    {"starting_at": "{d2}T00:00:00Z", "ending_at": "{d1}T00:00:00Z", "results": [
+      {"workspace_id": "wrkspc_mock_datasci", "description": "Claude Sonnet 5.5 Usage - Input Tokens", "model": "claude-sonnet-5-5", "cost_type": "tokens", "currency": "USD", "amount": "1590.00"},
+      {"workspace_id": "wrkspc_mock_datasci", "description": "Claude Sonnet 5.5 Usage - Output Tokens", "model": "claude-sonnet-5-5", "cost_type": "tokens", "currency": "USD", "amount": "1425.00"},
+      {"workspace_id": "wrkspc_mock_unknown", "description": "Claude Sonnet 5.5 Usage - Input Tokens", "model": "claude-sonnet-5-5", "cost_type": "tokens", "currency": "USD", "amount": "90.00"}
+    ]}
+  ],
+  "has_more": false,
+  "next_page": null
+}
